@@ -49,6 +49,50 @@ use std::mem;
 use std::fmt::Debug;
 use std::hash::Hash;
 
+/// Size of `u8`.
+pub const U8 : usize = 1;
+
+/// Size of `u16`.
+pub const U16: usize = 2;
+
+/// Size of `u24`.
+pub const U24: usize = 3;
+
+/// Size of `u32`.
+pub const U32: usize = 4;
+
+/// Size of `u64`.
+pub const U64: usize = 8;
+
+/// Size of `i128`.
+#[cfg(feature = "i128")]
+pub const U128: usize = 16;
+
+/// Size of `i8`.
+pub const I8 : usize = 1;
+
+/// Size of `i16`.
+pub const I16: usize = 2;
+
+/// Size of `i24`.
+pub const I24: usize = 3;
+
+/// Size of `i32`.
+pub const I32: usize = 4;
+
+/// Size of `i64`.
+pub const I64: usize = 8;
+
+/// Size of `i128`.
+#[cfg(feature = "i128")]
+pub const I128: usize = 16;
+
+/// Size of `f32`.
+pub const F32: usize = 4;
+
+/// Size of `f64`.
+pub const F64: usize = 8;
+
 /// Calculates padding of `align`ed bytes `offset` via two's complement
 /// shortcuts instead of branching and modulo operations.
 pub fn padding(offset: usize, align: usize) -> usize {
@@ -106,14 +150,14 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `u8` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn u8(&self, offset: usize) -> u8 {
-		let offset = self.at(offset, 1);
+		let offset = self.at(offset, U8);
 		self.as_ref()[offset]
 	}
 
 	/// Gets `u16` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn u16(&self, offset: usize) -> u16 {
-		let offset = self.at(offset, 2);
+		let offset = self.at(offset, U16);
 		if self.is_be() {
 			BE::read_u16(&self.as_ref()[offset..])
 		} else {
@@ -124,7 +168,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `u24` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn u24(&self, offset: usize) -> u32 {
-		let offset = self.at(offset, 3);
+		let offset = self.at(offset, U24);
 		if self.is_be() {
 			BE::read_u24(&self.as_ref()[offset..])
 		} else {
@@ -135,7 +179,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `u32` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn u32(&self, offset: usize) -> u32 {
-		let offset = self.at(offset, 4);
+		let offset = self.at(offset, U32);
 		if self.is_be() {
 			BE::read_u32(&self.as_ref()[offset..])
 		} else {
@@ -146,11 +190,23 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `u64` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn u64(&self, offset: usize) -> u64 {
-		let offset = self.at(offset, 8);
+		let offset = self.at(offset, U64);
 		if self.is_be() {
 			BE::read_u64(&self.as_ref()[offset..])
 		} else {
 			LE::read_u64(&self.as_ref()[offset..])
+		}
+	}
+
+	/// Gets `u128` in slice of `swap_size()` at big-endian `offset`
+	/// endian-independently.
+	#[cfg(feature = "i128")]
+	fn u128(&self, offset: usize) -> u128 {
+		let offset = self.at(offset, U128);
+		if self.is_be() {
+			BE::read_u128(&self.as_ref()[offset..])
+		} else {
+			LE::read_u128(&self.as_ref()[offset..])
 		}
 	}
 
@@ -177,29 +233,17 @@ pub trait InSitu: AsRef<[u8]> {
 		}
 	}
 
-	/// Gets `u128` in slice of `swap_size()` at big-endian `offset`
-	/// endian-independently.
-	#[cfg(feature = "i128")]
-	fn u128(&self, offset: usize) -> u128 {
-		let offset = self.at(offset, 16);
-		if self.is_be() {
-			BE::read_u128(&self.as_ref()[offset..])
-		} else {
-			LE::read_u128(&self.as_ref()[offset..])
-		}
-	}
-
 	/// Gets `i8` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn i8(&self, offset: usize) -> i8 {
-		let offset = self.at(offset, 1);
+		let offset = self.at(offset, I8);
 		self.as_ref()[offset] as i8
 	}
 
 	/// Gets `i16` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn i16(&self, offset: usize) -> i16 {
-		let offset = self.at(offset, 2);
+		let offset = self.at(offset, I16);
 		if self.is_be() {
 			BE::read_i16(&self.as_ref()[offset..])
 		} else {
@@ -210,7 +254,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `i24` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn i24(&self, offset: usize) -> i32 {
-		let offset = self.at(offset, 3);
+		let offset = self.at(offset, I24);
 		if self.is_be() {
 			BE::read_i24(&self.as_ref()[offset..])
 		} else {
@@ -221,7 +265,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `i32` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn i32(&self, offset: usize) -> i32 {
-		let offset = self.at(offset, 4);
+		let offset = self.at(offset, I32);
 		if self.is_be() {
 			BE::read_i32(&self.as_ref()[offset..])
 		} else {
@@ -232,7 +276,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `i64` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn i64(&self, offset: usize) -> i64 {
-		let offset = self.at(offset, 8);
+		let offset = self.at(offset, I64);
 		if self.is_be() {
 			BE::read_i64(&self.as_ref()[offset..])
 		} else {
@@ -244,7 +288,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// endian-independently.
 	#[cfg(feature = "i128")]
 	fn i128(&self, offset: usize) -> i128 {
-		let offset = self.at(offset, 16);
+		let offset = self.at(offset, I128);
 		if self.is_be() {
 			BE::read_i128(&self.as_ref()[offset..])
 		} else {
@@ -278,7 +322,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `f32` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn f32(&self, offset: usize) -> f32 {
-		let offset = self.at(offset, 4);
+		let offset = self.at(offset, F32);
 		if self.is_be() {
 			BE::read_f32(&self.as_ref()[offset..])
 		} else {
@@ -289,7 +333,7 @@ pub trait InSitu: AsRef<[u8]> {
 	/// Gets `f64` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn f64(&self, offset: usize) -> f64 {
-		let offset = self.at(offset, 8);
+		let offset = self.at(offset, F64);
 		if self.is_be() {
 			BE::read_f64(&self.as_ref()[offset..])
 		} else {
@@ -305,14 +349,14 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `u8` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_u8(&mut self, offset: usize, value: u8) {
-		let at = self.at(offset, 1);
+		let at = self.at(offset, U8);
 		self.as_mut()[at] = value;
 	}
 
 	/// Sets `u16` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_u16(&mut self, offset: usize, value: u16) {
-		let offset = self.at(offset, 2);
+		let offset = self.at(offset, U16);
 		if self.is_be() {
 			BE::write_u16(&mut self.as_mut()[offset..], value)
 		} else {
@@ -323,7 +367,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `u24` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_u24(&mut self, offset: usize, value: u32) {
-		let offset = self.at(offset, 3);
+		let offset = self.at(offset, U24);
 		if self.is_be() {
 			BE::write_u24(&mut self.as_mut()[offset..], value)
 		} else {
@@ -334,7 +378,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `u32` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_u32(&mut self, offset: usize, value: u32) {
-		let offset = self.at(offset, 4);
+		let offset = self.at(offset, U32);
 		if self.is_be() {
 			BE::write_u32(&mut self.as_mut()[offset..], value)
 		} else {
@@ -345,7 +389,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `u64` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_u64(&mut self, offset: usize, value: u64) {
-		let offset = self.at(offset, 8);
+		let offset = self.at(offset, U64);
 		if self.is_be() {
 			BE::write_u64(&mut self.as_mut()[offset..], value)
 		} else {
@@ -357,7 +401,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// endian-independently.
 	#[cfg(feature = "i128")]
 	fn set_u128(&mut self, offset: usize, value: u128) {
-		let offset = self.at(offset, 16);
+		let offset = self.at(offset, U128);
 		if self.is_be() {
 			BE::write_u128(&mut self.as_mut()[offset..], value)
 		} else {
@@ -391,14 +435,14 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `i8` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_i8(&mut self, offset: usize, value: i8) {
-		let at = self.at(offset, 1);
+		let at = self.at(offset, I8);
 		self.as_mut()[at] = value as u8;
 	}
 
 	/// Sets `i16` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_i16(&mut self, offset: usize, value: i16) {
-		let offset = self.at(offset, 2);
+		let offset = self.at(offset, I16);
 		if self.is_be() {
 			BE::write_i16(&mut self.as_mut()[offset..], value)
 		} else {
@@ -409,7 +453,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `i24` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_i24(&mut self, offset: usize, value: i32) {
-		let offset = self.at(offset, 3);
+		let offset = self.at(offset, I24);
 		if self.is_be() {
 			BE::write_i24(&mut self.as_mut()[offset..], value)
 		} else {
@@ -420,7 +464,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `i32` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_i32(&mut self, offset: usize, value: i32) {
-		let offset = self.at(offset, 4);
+		let offset = self.at(offset, I32);
 		if self.is_be() {
 			BE::write_i32(&mut self.as_mut()[offset..], value)
 		} else {
@@ -431,7 +475,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `i64` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_i64(&mut self, offset: usize, value: i64) {
-		let offset = self.at(offset, 8);
+		let offset = self.at(offset, I64);
 		if self.is_be() {
 			BE::write_i64(&mut self.as_mut()[offset..], value)
 		} else {
@@ -443,7 +487,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// endian-independently.
 	#[cfg(feature = "i128")]
 	fn set_i128(&mut self, offset: usize, value: i128) {
-		let offset = self.at(offset, 16);
+		let offset = self.at(offset, I128);
 		if self.is_be() {
 			BE::write_i128(&mut self.as_mut()[offset..], value)
 		} else {
@@ -477,7 +521,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `f32` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_f32(&mut self, offset: usize, value: f32) {
-		let offset = self.at(offset, 4);
+		let offset = self.at(offset, F32);
 		if self.is_be() {
 			BE::write_f32(&mut self.as_mut()[offset..], value)
 		} else {
@@ -488,7 +532,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 	/// Sets `f64` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
 	fn set_f64(&mut self, offset: usize, value: f64) {
-		let offset = self.at(offset, 8);
+		let offset = self.at(offset, F64);
 		if self.is_be() {
 			BE::write_f64(&mut self.as_mut()[offset..], value)
 		} else {
