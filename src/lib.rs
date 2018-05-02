@@ -20,7 +20,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! in-situ = "0.1"
+//! in-situ = "0.2"
 //!
 //! # Optionally enable `i128_type` support on nightly Rust.
 //! #[dependencies.in-situ]
@@ -50,7 +50,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 /// Size of `u8`.
-pub const U8 : usize = 1;
+pub const U8: usize = 1;
 
 /// Size of `u16`.
 pub const U16: usize = 2;
@@ -64,12 +64,12 @@ pub const U32: usize = 4;
 /// Size of `u64`.
 pub const U64: usize = 8;
 
-/// Size of `i128`.
+/// Size of `u128`.
 #[cfg(feature = "i128")]
 pub const U128: usize = 16;
 
 /// Size of `i8`.
-pub const I8 : usize = 1;
+pub const I8: usize = 1;
 
 /// Size of `i16`.
 pub const I16: usize = 2;

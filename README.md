@@ -28,7 +28,7 @@ used by adding `in-situ` to the dependencies in your project's
 
 ```toml
 [dependencies]
-in-situ = "0.1"
+in-situ = "0.2"
 
 # Optionally enable `i128_type` support on nightly Rust.
 #[dependencies.in-situ]
