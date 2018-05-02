@@ -14,7 +14,11 @@ keywords = [
 	"zero-copy",
 	"parsing",
 ]
-categories = ["parsing"]
+categories = [
+	"data-structures",
+	"encoding",
+	"parsing",
+]
 license = "Fair"
 include = [
 	"src/lib.rs",

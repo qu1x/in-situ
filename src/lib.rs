@@ -626,3 +626,13 @@ pub enum Order {
 	/// Little-endian byte order.
 	LE,
 }
+
+/// Type of `from` methods' argument specifying to take the bytes of either the
+/// header only or the whole packet.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Take {
+	/// Take bytes of header only.
+	Header,
+	/// Take bytes of whole packet.
+	Packet,
+}
