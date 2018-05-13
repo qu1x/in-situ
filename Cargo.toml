@@ -1,6 +1,6 @@
 [package]
 name = "in-situ"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Rouven Spreckels <n3vu0r@qu1x.org>"]
 description = "In Situ Endian-independent Bytes Access"
 documentation = "https://docs.rs/in-situ"
@@ -31,8 +31,5 @@ include = [
 travis-ci = { repository = "qu1x/in-situ" }
 
 [dependencies]
-byteorder = "1.2"
+byteorder = { version = "1.2", features = ["i128"] }
 bytes = "0.4"
-
-[features]
-i128 = ["byteorder/i128"]

@@ -2,6 +2,8 @@
 
 **In Situ Endian-independent Bytes Access**
 
+**Requires stable Rust 1.26**
+
 [![Build Status][]](https://travis-ci.org/qu1x/in-situ)
 [![Downloads][]](https://crates.io/crates/in-situ)
 [![Version][]](https://crates.io/crates/in-situ)
@@ -28,20 +30,12 @@ used by adding `in-situ` to the dependencies in your project's
 
 ```toml
 [dependencies]
-in-situ = "0.2"
-
-# Optionally enable `i128_type` support on nightly Rust.
-#[dependencies.in-situ]
-#features = ["i128"]
+in-situ = "0.3"
 ```
 
 and this to your crate root:
 
 ```rust
-// Optionally enable `i128_type` support on nightly Rust.
-// Required if the `i128` feature is enabled in your `Cargo.toml`.
-//#![feature(i128_type)]
-
 extern crate in_situ;
 ```
 

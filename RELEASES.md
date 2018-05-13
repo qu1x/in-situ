@@ -1,3 +1,8 @@
+# Version 0.3.0 (2018-05-13)
+
+  * Add stable `i128_type` support and remove its feature requiring Rust 1.26.
+  * Add `Take` type.
+
 # Version 0.2.0 (2018-05-02)
 
   * Add size constants

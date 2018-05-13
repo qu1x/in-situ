@@ -20,20 +20,12 @@
 //!
 //! ```toml
 //! [dependencies]
-//! in-situ = "0.2"
-//!
-//! # Optionally enable `i128_type` support on nightly Rust.
-//! #[dependencies.in-situ]
-//! #features = ["i128"]
+//! in-situ = "0.3"
 //! ```
 //!
 //! and this to your crate root:
 //!
 //! ```
-//! // Optionally enable `i128_type` support on nightly Rust.
-//! // Required if the `i128` feature is enabled in your `Cargo.toml`.
-//! //#![feature(i128_type)]
-//!
 //! extern crate in_situ;
 //! ```
 
@@ -65,7 +57,6 @@ pub const U32: usize = 4;
 pub const U64: usize = 8;
 
 /// Size of `u128`.
-#[cfg(feature = "i128")]
 pub const U128: usize = 16;
 
 /// Size of `i8`.
@@ -84,7 +75,6 @@ pub const I32: usize = 4;
 pub const I64: usize = 8;
 
 /// Size of `i128`.
-#[cfg(feature = "i128")]
 pub const I128: usize = 16;
 
 /// Size of `f32`.
@@ -200,7 +190,6 @@ pub trait InSitu: AsRef<[u8]> {
 
 	/// Gets `u128` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
-	#[cfg(feature = "i128")]
 	fn u128(&self, offset: usize) -> u128 {
 		let offset = self.at(offset, U128);
 		if self.is_be() {
@@ -223,7 +212,6 @@ pub trait InSitu: AsRef<[u8]> {
 
 	/// Gets unsigned integer of `word_size <= 16` in slice of `swap_size()` at
 	/// big-endian `offset` endian-independently.
-	#[cfg(feature = "i128")]
 	fn uint128(&self, offset: usize, word_size: usize) -> u128 {
 		let offset = self.at(offset, word_size);
 		if self.is_be() {
@@ -286,7 +274,6 @@ pub trait InSitu: AsRef<[u8]> {
 
 	/// Gets `u128` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
-	#[cfg(feature = "i128")]
 	fn i128(&self, offset: usize) -> i128 {
 		let offset = self.at(offset, I128);
 		if self.is_be() {
@@ -309,7 +296,6 @@ pub trait InSitu: AsRef<[u8]> {
 
 	/// Gets signed integer of `word_size <= 16` in slice of `swap_size()` at
 	/// big-endian `offset` endian-independently.
-	#[cfg(feature = "i128")]
 	fn int128(&self, offset: usize, word_size: usize) -> i128 {
 		let offset = self.at(offset, word_size);
 		if self.is_be() {
@@ -399,7 +385,6 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 
 	/// Sets `u128` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
-	#[cfg(feature = "i128")]
 	fn set_u128(&mut self, offset: usize, value: u128) {
 		let offset = self.at(offset, U128);
 		if self.is_be() {
@@ -422,7 +407,6 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 
 	/// Sets unsigned integer of `word_size <= 16` in slice of `swap_size()` at
 	/// big-endian `offset` endian-independently.
-	#[cfg(feature = "i128")]
 	fn set_uint128(&mut self, offset: usize, value: u128, word_size: usize) {
 		let offset = self.at(offset, word_size);
 		if self.is_be() {
@@ -485,7 +469,6 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 
 	/// Sets `i128` in slice of `swap_size()` at big-endian `offset`
 	/// endian-independently.
-	#[cfg(feature = "i128")]
 	fn set_i128(&mut self, offset: usize, value: i128) {
 		let offset = self.at(offset, I128);
 		if self.is_be() {
@@ -508,7 +491,6 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 
 	/// Sets signed integer of `word_size <= 16` in slice of `swap_size()` at
 	/// big-endian `offset` endian-independently.
-	#[cfg(feature = "i128")]
 	fn set_int128(&mut self, offset: usize, value: i128, word_size: usize) {
 		let offset = self.at(offset, word_size);
 		if self.is_be() {
