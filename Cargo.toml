@@ -31,5 +31,5 @@ include = [
 travis-ci = { repository = "qu1x/in-situ" }
 
 [dependencies]
-byteorder = { version = "1.2", features = ["i128"] }
+byteorder = "1"
 bytes = "0.4"
