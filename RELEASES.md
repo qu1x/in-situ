@@ -1,3 +1,7 @@
+# Version 0.4.0 (2020-02-12)
+
+  * Use `byteorder = "1"` and `bytes = "0.5"`.
+
 # Version 0.3.0 (2018-05-13)
 
   * Add stable `i128_type` support and remove its feature requiring Rust 1.26.

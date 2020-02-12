@@ -2,8 +2,6 @@
 
 **In Situ Endian-independent Bytes Access**
 
-**Requires stable Rust 1.26**
-
 [![Build Status][]](https://travis-ci.org/qu1x/in-situ)
 [![Downloads][]](https://crates.io/crates/in-situ)
 [![Version][]](https://crates.io/crates/in-situ)
@@ -25,23 +23,16 @@
 ## Usage
 
 This crate is [on crates.io](https://crates.io/crates/in-situ) and can be
-used by adding `in-situ` to the dependencies in your project's
-`Cargo.toml`:
+used by adding `in-situ` to the dependencies in your project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-in-situ = "0.3"
-```
-
-and this to your crate root:
-
-```rust
-extern crate in_situ;
+in-situ = "0.4"
 ```
 
 ## License
 
-Copyright (c) 2018 Rouven Spreckels <n3vu0r@qu1x.org>
+Copyright (c) 2018-2020 Rouven Spreckels <n3vu0r@qu1x.org>
 
 Usage of the works is permitted provided that
 this instrument is retained with the works, so that

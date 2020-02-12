@@ -15,18 +15,11 @@
 //! # Usage
 //!
 //! This crate is [on crates.io](https://crates.io/crates/in-situ) and can be
-//! used by adding `in-situ` to the dependencies in your project's
-//! `Cargo.toml`:
+//! used by adding `in-situ` to the dependencies in your project's `Cargo.toml`:
 //!
 //! ```toml
 //! [dependencies]
-//! in-situ = "0.3"
-//! ```
-//!
-//! and this to your crate root:
-//!
-//! ```
-//! extern crate in_situ;
+//! in-situ = "0.4"
 //! ```
 
 #![deny(missing_docs)]
