@@ -1,3 +1,8 @@
+# Version 0.5.0 (2025-11-20)
+
+  * Modernize.
+  * Change license to `MIT OR Apache-2.0`.
+
 # Version 0.4.0 (2020-02-12)
 
   * Use `byteorder = "1"` and `bytes = "0.5"`.

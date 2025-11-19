@@ -1,12 +1,13 @@
 [package]
 name = "in-situ"
-version = "0.4.0"
-authors = ["Rouven Spreckels <n3vu0r@qu1x.org>"]
-description = "In Situ Endian-independent Bytes Access"
+version = "0.5.0"
+rust-version = "1.85.0"
+edition = "2024"
+description = "In Situ Endian-Independent Bytes Access"
 documentation = "https://docs.rs/in-situ"
-homepage = "https://qu1x.org/in-situ"
 repository = "https://github.com/qu1x/in-situ"
-readme = "README.md"
+authors = ["Rouven Spreckels <rs@qu1x.dev>"]
+license = "MIT OR Apache-2.0"
 keywords = [
 	"in-situ",
 	"endian-independent",
@@ -19,7 +20,6 @@ categories = [
 	"encoding",
 	"parsing",
 ]
-license = "Fair"
 include = [
 	"src/lib.rs",
 	"Cargo.toml",
@@ -27,9 +27,20 @@ include = [
 	"RELEASES.md",
 ]
 
-[badges]
-travis-ci = { repository = "qu1x/in-situ" }
+[package.metadata.docs.rs]
+features = ["bytes"]
 
 [dependencies]
-byteorder = "1"
-bytes = "0.5"
+byteorder = { version = "1", default-features = false }
+bytes = { version = "1", default-features = false, optional = true }
+
+[lints.rust]
+missing-docs = "forbid"
+
+[lints.rustdoc]
+broken-intra-doc-links = "forbid"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }

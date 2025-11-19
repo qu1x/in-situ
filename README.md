@@ -1,47 +1,34 @@
 # in-situ
 
-**In Situ Endian-independent Bytes Access**
-
-[![Build Status][]](https://travis-ci.org/qu1x/in-situ)
+[![Build][]](https://github.com/qu1x/in-situ/actions/workflows/build.yml)
+[![Documentation][]](https://docs.rs/in-situ)
 [![Downloads][]](https://crates.io/crates/in-situ)
 [![Version][]](https://crates.io/crates/in-situ)
-[![Documentation][]](https://docs.rs/in-situ)
-[![License][]](https://opensource.org/licenses/Fair)
+[![Rust][]](https://www.rust-lang.org)
+[![License][]](https://opensource.org/licenses)
 
-[Build Status]: https://travis-ci.org/qu1x/in-situ.svg
+[Build]: https://github.com/qu1x/in-situ/actions/workflows/build.yml/badge.svg
+[Documentation]: https://docs.rs/in-situ/badge.svg
 [Downloads]: https://img.shields.io/crates/d/in-situ.svg
 [Version]: https://img.shields.io/crates/v/in-situ.svg
-[Documentation]: https://docs.rs/in-situ/badge.svg
-[License]: https://img.shields.io/crates/l/in-situ.svg
+[Rust]: https://img.shields.io/badge/rust-v1.85.0-brightgreen.svg
+[License]: https://img.shields.io/badge/License-MIT%2FApache--2.0-blue.svg
 
-## Contents
+In Situ Endian-iIndependent Bytes Access
 
-  * [Usage](#usage)
-  * [License](#license)
-  * [Contribution](#contribution)
+## Feature Gates
 
-## Usage
-
-This crate is [on crates.io](https://crates.io/crates/in-situ) and can be
-used by adding `in-situ` to the dependencies in your project's `Cargo.toml`:
-
-```toml
-[dependencies]
-in-situ = "0.4"
-```
+  * `bytes`: For abstracting `Bytes` and `BytesMut` as well.
 
 ## License
 
-Copyright (c) 2018-2020 Rouven Spreckels <n3vu0r@qu1x.org>
+This work is dual-licensed under either [`MIT`] or [`Apache-2.0`] at your option.
 
-Usage of the works is permitted provided that
-this instrument is retained with the works, so that
-any entity that uses the works is notified of this instrument.
-
-DISCLAIMER: THE WORKS ARE WITHOUT WARRANTY.
+[`MIT`]: LICENSE-MIT
+[`Apache-2.0`]: LICENSE-APACHE
 
 ## Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the works by you shall be licensed as above, without any
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the
+work by you, as defined in the [`Apache-2.0`] license, shall be dual-licensed as above, without any
 additional terms or conditions.
