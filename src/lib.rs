@@ -4,12 +4,16 @@
 //!
 //!   * `bytes`: For abstracting `Bytes` and `BytesMut` as well.
 
+#[cfg(feature = "bstr")]
+pub use bstr;
+#[cfg(feature = "bstr")]
+use bstr::BStr;
 pub use byteorder;
 #[cfg(feature = "bytes")]
 pub use bytes;
 
 use byteorder::{BE, ByteOrder, LE, NativeEndian};
-use std::{fmt::Debug, hash::Hash, mem};
+use std::{fmt::Debug, hash::Hash, mem, str::Utf8Error};
 
 /// Size of `u8`.
 pub const U8: usize = 1;
@@ -95,6 +99,19 @@ pub trait InSitu: AsRef<[u8]> {
         } else {
             offset ^ (self.swap_size() - word_size)
         }
+    }
+    /// Gets `&str` if UTF-8 in slice of `swap_size()` at big-endian `offset` endian-independently.
+    fn utf8(&self, offset: usize, length: usize) -> Result<&str, Utf8Error> {
+        str::from_utf8(&self.as_ref()[offset..][..length])
+    }
+    /// Gets `BStr` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    #[cfg(feature = "bstr")]
+    fn bstr(&self, offset: usize, length: usize) -> BStr {
+        BStr::new(&self.as_ref()[offset..][..length])
+    }
+    /// Gets `bool` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    fn bool(&self, offset: usize) -> bool {
+        self.u8(offset) != 0
     }
     /// Gets `u8` in slice of `swap_size()` at big-endian `offset` endian-independently.
     fn u8(&self, offset: usize) -> u8 {

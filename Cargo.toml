@@ -28,11 +28,12 @@ include = [
 ]
 
 [package.metadata.docs.rs]
-features = ["bytes"]
+all-features = true
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
 bytes = { version = "1", default-features = false, optional = true }
+bstr = { version = "1", default-features = false, optional = true }
 
 [lints.rust]
 missing-docs = "forbid"
