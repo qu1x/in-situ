@@ -101,12 +101,17 @@ pub trait InSitu: AsRef<[u8]> {
         }
     }
     /// Gets `&str` if UTF-8 in slice of `swap_size()` at big-endian `offset` endian-independently.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err` if the slice is not UTF-8 with a description as to why the provided slice is
+    /// not UTF-8.
     fn utf8(&self, offset: usize, length: usize) -> Result<&str, Utf8Error> {
-        str::from_utf8(&self.as_ref()[offset..][..length])
+        std::str::from_utf8(&self.as_ref()[offset..][..length])
     }
     /// Gets `BStr` in slice of `swap_size()` at big-endian `offset` endian-independently.
     #[cfg(feature = "bstr")]
-    fn bstr(&self, offset: usize, length: usize) -> BStr {
+    fn bstr(&self, offset: usize, length: usize) -> &BStr {
         BStr::new(&self.as_ref()[offset..][..length])
     }
     /// Gets `bool` in slice of `swap_size()` at big-endian `offset` endian-independently.

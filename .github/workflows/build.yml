@@ -23,6 +23,8 @@ jobs:
         components: rustfmt, rust-docs, clippy
     - name: test
       run: cargo test
+    - name: test
+      run: cargo test --all-features
     - name: clippy
       run: cargo clippy --tests --examples
     - name: doc
