@@ -3,6 +3,7 @@
 //! # Feature Gates
 //!
 //!   * `bytes`: For abstracting `Bytes` and `BytesMut` as well.
+//!   * `bstr`: For complementing `InSitu::utf8()` with `InSitu::bstr()`.
 
 #[cfg(feature = "bstr")]
 pub use bstr;
@@ -284,6 +285,10 @@ pub trait InSitu: AsRef<[u8]> {
 /// Requires `InSitu` trait to know about endianness. This trait is auto-implemented for all
 /// `InSitu + AsMut<[u8]>` implementors.
 pub trait InSituMut: InSitu + AsMut<[u8]> {
+    /// Sets `bool` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    fn set_bool(&mut self, offset: usize, value: bool) {
+        self.set_u8(offset, value.into());
+    }
     /// Sets `u8` in slice of `swap_size()` at big-endian `offset` endian-independently.
     fn set_u8(&mut self, offset: usize, value: u8) {
         let at = self.at(offset, U8);

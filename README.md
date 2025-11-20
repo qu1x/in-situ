@@ -19,6 +19,7 @@ In Situ Endian-iIndependent Bytes Access
 ## Feature Gates
 
   * `bytes`: For abstracting `Bytes` and `BytesMut` as well.
+  * `bstr`: For complementing `InSitu::utf8()` with `InSitu::bstr()`.
 
 ## License
 
