@@ -2,8 +2,8 @@
 //!
 //! # Feature Gates
 //!
-//!   * `bytes`: For abstracting `Bytes` and `BytesMut` as well.
-//!   * `bstr`: For complementing `InSitu::utf8()` with `InSitu::bstr()`.
+//!   * `bytes`: For abstracting `Bytes` and `BytesMut`.
+//!   * `bstr`: For complementing [`InSitu::utf8()`] with `InSitu::bstr()`.
 
 #[cfg(feature = "bstr")]
 pub use bstr;
@@ -16,33 +16,33 @@ pub use bytes;
 use byteorder::{BE, ByteOrder, LE, NativeEndian};
 use std::{fmt::Debug, hash::Hash, mem, str::Utf8Error};
 
-/// Size of `u8`.
+/// Size of [`u8`] in bytes.
 pub const U8: usize = 1;
-/// Size of `u16`.
+/// Size of [`u16`] in bytes.
 pub const U16: usize = 2;
-/// Size of `u24`.
+/// Size of `u24` in bytes.
 pub const U24: usize = 3;
-/// Size of `u32`.
+/// Size of [`u32`] in bytes.
 pub const U32: usize = 4;
-/// Size of `u64`.
+/// Size of [`u64`] in bytes.
 pub const U64: usize = 8;
-/// Size of `u128`.
+/// Size of [`u128`] in bytes.
 pub const U128: usize = 16;
-/// Size of `i8`.
+/// Size of [`i8`] in bytes.
 pub const I8: usize = 1;
-/// Size of `i16`.
+/// Size of [`i16`] in bytes.
 pub const I16: usize = 2;
-/// Size of `i24`.
+/// Size of `i24` in bytes.
 pub const I24: usize = 3;
-/// Size of `i32`.
+/// Size of [`i32`] in bytes.
 pub const I32: usize = 4;
-/// Size of `i64`.
+/// Size of [`i64`] in bytes.
 pub const I64: usize = 8;
-/// Size of `i128`.
+/// Size of [`i128`] in bytes.
 pub const I128: usize = 16;
-/// Size of `f32`.
+/// Size of [`f32`] in bytes.
 pub const F32: usize = 4;
-/// Size of `f64`.
+/// Size of [`f64`] in bytes.
 pub const F64: usize = 8;
 
 /// Calculates padding of `align`ed `offset` in bytes.
@@ -70,17 +70,19 @@ pub fn aligned(offset: usize, align: usize) -> usize {
 /// Provides endian-independent immutable bytes access.
 ///
 /// Requires methods to be implemented detecting or hardcoding the word size and endianness. This
-/// trait requires the `AsRef<[u8]>` trait to access slices of generic types. It is not implemented
-/// for the `Raw` trait but instead for its wrapper types since each wrapper might implement the
-/// endianness detection differently. The `Scope` allows to make implementations private by defining
-/// a private `struct Scope;`. The default `InSitu<Scope = ()>` is public.
+/// trait requires the <code>[AsRef]<\[[u8]\]></code> trait to access slices of generic types. It is
+/// not implemented for the [`Raw`] trait but instead for its wrapper types since each wrapper might
+/// implement the endianness detection differently. The generic type parameter `Scope` allows to
+/// define the trait's visibility, e.g., by assigning a private type instead of the public default
+/// type parameter `Scope = ()`.
 pub trait InSitu<Scope = ()>: AsRef<[u8]> {
-    /// The word size of the slice, not to be confused with the various word sizes of how to access
-    /// the slice.
+    /// The word size of the slice required by [`Self::at()`], not to be confused with the various
+    /// word sizes of how to access the slice. Use `0` if [`Self::is_le()`] does not affect the
+    /// offsets, i.e., the offsets are big-endian regardless of [`Self::is_le()`].
     fn swap_size(&self) -> usize;
-    /// Whether the underlying bytes are in big-endian (be) or little-endian (le) byte order.
+    /// Whether the underlying bytes are in big-endian (BE) or little-endian (LE) byte order.
     fn is_be(&self) -> bool;
-    /// Inversion of `is_be()`.
+    /// Inversion of [`Self::is_be()`].
     fn is_le(&self) -> bool {
         !self.is_be()
     }
@@ -88,13 +90,13 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
     fn is_native(&self) -> bool {
         self.is_be() == (NativeEndian::read_u16(&[0, 1]) == 1)
     }
-    /// Convert `is_be()`/`is_le()` into `Order`.
+    /// Convert [`Self::is_be()`] and [`Self::is_le()`] into `Order`.
     fn order(&self) -> Order {
         if self.is_be() { Order::BE } else { Order::LE }
     }
-    /// If `is_le()`, translates big-endian `offset` of word with `word_size` in slice of
-    /// `swap_size()` into little-endian via bitwise instead of branching and modulo operations,
-    /// otherwise passes through `offset`.
+    /// If [`Self::is_le()`], translates big-endian `offset` of word with `word_size` in slice of
+    /// [`Self::swap_size()`] into little-endian via bitwise instead of branching and modulo
+    /// operations, otherwise passes through `offset`.
     fn at(&self, offset: usize, word_size: usize) -> usize {
         if self.is_be() || self.swap_size() < word_size {
             offset
@@ -102,30 +104,31 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             offset ^ (self.swap_size() - word_size)
         }
     }
-    /// Gets `&str` if UTF-8 in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`&str`] if UTF-8 in slice of [`Self::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     ///
     /// # Errors
     ///
-    /// Returns `Err` if the slice is not UTF-8 with a description as to why the provided slice is
-    /// not UTF-8.
+    /// Returns [`Utf8Error`] if the slice is not UTF-8 with a description as to why the provided
+    /// slice is not UTF-8.
     fn utf8(&self, offset: usize, length: usize) -> Result<&str, Utf8Error> {
         std::str::from_utf8(&self.as_ref()[offset..][..length])
     }
-    /// Gets `BStr` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`BStr`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     #[cfg(feature = "bstr")]
     fn bstr(&self, offset: usize, length: usize) -> &BStr {
         BStr::new(&self.as_ref()[offset..][..length])
     }
-    /// Gets `bool` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`bool`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn bool(&self, offset: usize) -> bool {
         self.u8(offset) != 0
     }
-    /// Gets `u8` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`u8`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn u8(&self, offset: usize) -> u8 {
         let offset = self.at(offset, U8);
         self.as_ref()[offset]
     }
-    /// Gets `u16` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`u16`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn u16(&self, offset: usize) -> u16 {
         let offset = self.at(offset, U16);
         if self.is_be() {
@@ -134,7 +137,8 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_u16(&self.as_ref()[offset..])
         }
     }
-    /// Gets `u24` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets `u24` as [`u32`] in slice of [`Self::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn u24(&self, offset: usize) -> u32 {
         let offset = self.at(offset, U24);
         if self.is_be() {
@@ -143,7 +147,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_u24(&self.as_ref()[offset..])
         }
     }
-    /// Gets `u32` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`u32`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn u32(&self, offset: usize) -> u32 {
         let offset = self.at(offset, U32);
         if self.is_be() {
@@ -152,7 +156,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_u32(&self.as_ref()[offset..])
         }
     }
-    /// Gets `u64` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`u64`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn u64(&self, offset: usize) -> u64 {
         let offset = self.at(offset, U64);
         if self.is_be() {
@@ -161,7 +165,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_u64(&self.as_ref()[offset..])
         }
     }
-    /// Gets `u128` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`u128`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn u128(&self, offset: usize) -> u128 {
         let offset = self.at(offset, U128);
         if self.is_be() {
@@ -170,8 +174,8 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_u128(&self.as_ref()[offset..])
         }
     }
-    /// Gets unsigned integer of `word_size <= 8` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Gets unsigned integer of `word_size <= 8` in slice of [`Self::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn uint(&self, offset: usize, word_size: usize) -> u64 {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -180,8 +184,8 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_uint(&self.as_ref()[offset..], word_size)
         }
     }
-    /// Gets unsigned integer of `word_size <= 16` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Gets unsigned integer of `word_size <= 16` in slice of [`Self::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn uint128(&self, offset: usize, word_size: usize) -> u128 {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -190,13 +194,13 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_uint128(&self.as_ref()[offset..], word_size)
         }
     }
-    /// Gets `i8` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`i8`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     #[allow(clippy::cast_possible_wrap)]
     fn i8(&self, offset: usize) -> i8 {
         let offset = self.at(offset, I8);
         self.as_ref()[offset] as i8
     }
-    /// Gets `i16` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`i16`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn i16(&self, offset: usize) -> i16 {
         let offset = self.at(offset, I16);
         if self.is_be() {
@@ -205,7 +209,8 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_i16(&self.as_ref()[offset..])
         }
     }
-    /// Gets `i24` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets `i24` as [`i32`] in slice of [`Self::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn i24(&self, offset: usize) -> i32 {
         let offset = self.at(offset, I24);
         if self.is_be() {
@@ -214,7 +219,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_i24(&self.as_ref()[offset..])
         }
     }
-    /// Gets `i32` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`i32`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn i32(&self, offset: usize) -> i32 {
         let offset = self.at(offset, I32);
         if self.is_be() {
@@ -223,7 +228,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_i32(&self.as_ref()[offset..])
         }
     }
-    /// Gets `i64` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`i64`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn i64(&self, offset: usize) -> i64 {
         let offset = self.at(offset, I64);
         if self.is_be() {
@@ -232,7 +237,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_i64(&self.as_ref()[offset..])
         }
     }
-    /// Gets `u128` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`u128`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn i128(&self, offset: usize) -> i128 {
         let offset = self.at(offset, I128);
         if self.is_be() {
@@ -241,8 +246,8 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_i128(&self.as_ref()[offset..])
         }
     }
-    /// Gets signed integer of `word_size <= 8` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Gets signed integer of `word_size <= 8` in slice of [`Self::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn int(&self, offset: usize, word_size: usize) -> i64 {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -251,8 +256,8 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_int(&self.as_ref()[offset..], word_size)
         }
     }
-    /// Gets signed integer of `word_size <= 16` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Gets signed integer of `word_size <= 16` in slice of [`Self::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn int128(&self, offset: usize, word_size: usize) -> i128 {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -261,7 +266,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_int128(&self.as_ref()[offset..], word_size)
         }
     }
-    /// Gets `f32` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`f32`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn f32(&self, offset: usize) -> f32 {
         let offset = self.at(offset, F32);
         if self.is_be() {
@@ -270,7 +275,7 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
             LE::read_f32(&self.as_ref()[offset..])
         }
     }
-    /// Gets `f64` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Gets [`f64`] in slice of [`Self::swap_size()`] at big-endian `offset` endian-independently.
     fn f64(&self, offset: usize) -> f64 {
         let offset = self.at(offset, F64);
         if self.is_be() {
@@ -283,22 +288,26 @@ pub trait InSitu<Scope = ()>: AsRef<[u8]> {
 
 /// Provides endian-independent mutable bytes access.
 ///
-/// Requires `InSitu<Scope>` trait to know about endianness. `InSituMut<Scope>` is **not (yet)**
-/// auto-implemented for all `InSitu<Scope> + AsMut<[u8]>` implementors as the trait name would leak
-/// into the documentation under blanket implementations even for a private `Scope`. This might be
-/// resolved in the far future by a language extension supporting scoped trait implementations or by
-/// just fixing `rustdoc` if there are no loopholes allowing to actually use the trait.
+/// Requires <code>[InSitu]\<Scope\></code> trait to know about endianness.
+/// <code>[InSituMut]\<Scope\></code> is **not (yet)** auto-implemented for all
+/// <code>[InSitu]\<Scope\> + [AsMut]\<\[[u8]\]\></code> implementors as the trait name would leak
+/// into the documentation under blanket implementations even for a private generic type parameter
+/// `Scope`. This might be resolved in the far future by a language extension supporting scoped
+/// trait implementations or by fixing *rustdoc* if there are no loopholes which would allow to
+/// actually use the trait.
 pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
-    /// Sets `bool` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`bool`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_bool(&mut self, offset: usize, value: bool) {
         self.set_u8(offset, value.into());
     }
-    /// Sets `u8` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`u8`] in slice of [`InSitu::swap_size()`] at big-endian `offset` endian-independently.
     fn set_u8(&mut self, offset: usize, value: u8) {
         let at = self.at(offset, U8);
         self.as_mut()[at] = value;
     }
-    /// Sets `u16` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`u16`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_u16(&mut self, offset: usize, value: u16) {
         let offset = self.at(offset, U16);
         if self.is_be() {
@@ -307,7 +316,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_u16(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `u24` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets `u24` as [`u32`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_u24(&mut self, offset: usize, value: u32) {
         let offset = self.at(offset, U24);
         if self.is_be() {
@@ -316,7 +326,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_u24(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `u32` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`u32`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_u32(&mut self, offset: usize, value: u32) {
         let offset = self.at(offset, U32);
         if self.is_be() {
@@ -325,7 +336,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_u32(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `u64` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`u64`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_u64(&mut self, offset: usize, value: u64) {
         let offset = self.at(offset, U64);
         if self.is_be() {
@@ -334,7 +346,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_u64(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `u128` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`u128`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_u128(&mut self, offset: usize, value: u128) {
         let offset = self.at(offset, U128);
         if self.is_be() {
@@ -343,8 +356,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_u128(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets unsigned integer of `word_size <= 8` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Sets unsigned integer of `word_size <= 8` in slice of [`InSitu::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn set_uint(&mut self, offset: usize, value: u64, word_size: usize) {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -353,8 +366,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_uint(&mut self.as_mut()[offset..], value, word_size);
         }
     }
-    /// Sets unsigned integer of `word_size <= 16` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Sets unsigned integer of `word_size <= 16` in slice of [`InSitu::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn set_uint128(&mut self, offset: usize, value: u128, word_size: usize) {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -363,13 +376,14 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_uint128(&mut self.as_mut()[offset..], value, word_size);
         }
     }
-    /// Sets `i8` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`i8`] in slice of [`InSitu::swap_size()`] at big-endian `offset` endian-independently.
     #[allow(clippy::cast_sign_loss)]
     fn set_i8(&mut self, offset: usize, value: i8) {
         let at = self.at(offset, I8);
         self.as_mut()[at] = value as u8;
     }
-    /// Sets `i16` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`i16`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_i16(&mut self, offset: usize, value: i16) {
         let offset = self.at(offset, I16);
         if self.is_be() {
@@ -378,7 +392,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_i16(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `i24` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets `i24` as [`i32`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_i24(&mut self, offset: usize, value: i32) {
         let offset = self.at(offset, I24);
         if self.is_be() {
@@ -387,7 +402,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_i24(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `i32` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`i32`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_i32(&mut self, offset: usize, value: i32) {
         let offset = self.at(offset, I32);
         if self.is_be() {
@@ -396,7 +412,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_i32(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `i64` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`i64]` in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_i64(&mut self, offset: usize, value: i64) {
         let offset = self.at(offset, I64);
         if self.is_be() {
@@ -405,7 +422,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_i64(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `i128` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`i128`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_i128(&mut self, offset: usize, value: i128) {
         let offset = self.at(offset, I128);
         if self.is_be() {
@@ -414,8 +432,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_i128(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets signed integer of `word_size <= 8` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Sets signed integer of `word_size <= 8` in slice of [`InSitu::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn set_int(&mut self, offset: usize, value: i64, word_size: usize) {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -424,8 +442,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_int(&mut self.as_mut()[offset..], value, word_size);
         }
     }
-    /// Sets signed integer of `word_size <= 16` in slice of `swap_size()` at big-endian `offset`
-    /// endian-independently.
+    /// Sets signed integer of `word_size <= 16` in slice of [`InSitu::swap_size()`] at big-endian
+    /// `offset` endian-independently.
     fn set_int128(&mut self, offset: usize, value: i128, word_size: usize) {
         let offset = self.at(offset, word_size);
         if self.is_be() {
@@ -434,7 +452,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_int128(&mut self.as_mut()[offset..], value, word_size);
         }
     }
-    /// Sets `f32` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`f32`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_f32(&mut self, offset: usize, value: f32) {
         let offset = self.at(offset, F32);
         if self.is_be() {
@@ -443,7 +462,8 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
             LE::write_f32(&mut self.as_mut()[offset..], value);
         }
     }
-    /// Sets `f64` in slice of `swap_size()` at big-endian `offset` endian-independently.
+    /// Sets [`f64`] in slice of [`InSitu::swap_size()`] at big-endian `offset`
+    /// endian-independently.
     fn set_f64(&mut self, offset: usize, value: f64) {
         let offset = self.at(offset, F64);
         if self.is_be() {
@@ -454,40 +474,41 @@ pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
     }
 }
 
-// Auto-implement `InSituMut` for `InSitu + AsMut<[u8]>` implementors.
+// /// Auto-implement <code>[InSituMut]\<S\> for [InSitu]\<S\> + [AsMut]\<\[[u8]\]\></code>
+// /// implementors.
 // impl<T: InSitu<S> + AsMut<[u8]>, S> InSituMut<S> for T {}
 
-/// Abstracts immutable as well as mutable generic bytes view types like `[u8]` and `mut [u8]` as
-/// immutable views.
+/// Abstracts immutable as well as mutable generic bytes view types like <code>&\[[u8]\]</code> and
+/// <code>&mut \[[u8]\]</code> as immutable views.
 ///
-/// With `bytes` feature, abstacts `Bytes` and `BytesMut` as well.
+/// With the `bytes` feature, abstacts `Bytes` and `BytesMut` as well.
 ///
 /// Requires some standard nice-to-have but easily-to-get traits, so the wrapper can just derive
 /// them. Requires methods to be implemented to split views into subviews.
 pub trait Raw: AsRef<[u8]> + Default + PartialEq + Eq + PartialOrd + Ord + Debug + Hash {
     /// Splits the bytes into two at the given index.
     ///
-    /// Afterwards `self` contains elements `[0, at)`, and the returned `Self` contains elements
+    /// Afterwards, `self` contains elements `[0, at)`, and the returned [`Self`] contains elements
     /// `[at, len)`.
     #[must_use]
     fn split_off(&mut self, at: usize) -> Self;
     /// Splits the bytes into two at the given index.
     ///
-    /// Afterwards `self` contains elements `[at, len)`, and the returned `Self` contains elements
-    /// `[0, at)`.
+    /// Afterwards, `self` contains elements `[at, len)`, and the returned [`Self`] contains
+    /// elements `[0, at)`.
     #[must_use]
     fn split_to(&mut self, at: usize) -> Self;
 }
 
-/// Abstracts mutable generic bytes view types like `mut [u8]` as mutable view.
+/// Abstracts mutable generic bytes view types like <code>&mut \[[u8]\]</code> as mutable view.
 ///
-/// With `bytes` feature, abstacts `BytesMut` as well.
+/// With the `bytes` feature, abstacts `BytesMut` as well.
 ///
-/// This trait is auto-implemented for `Raw + AsMut<[u8]>` implementors extending the immutable
-/// views with mutable ones.
+/// This trait is auto-implemented for <code>[Raw] + [AsMut]\<\[[u8]\]\></code> implementors
+/// extending the immutable views with mutable ones.
 pub trait RawMut: Raw + AsMut<[u8]> {}
 
-// Auto-implement `RawMut` for `Raw + AsMut<[u8]>` implementors.
+// Auto-implement [`RawMut`] for <code>[Raw] + [AsMut]\<\[[u8]\]\></code> implementors.
 impl<T: Raw + AsMut<[u8]>> RawMut for T {}
 
 impl Raw for &[u8] {
@@ -538,7 +559,7 @@ impl Raw for bytes::BytesMut {
     }
 }
 
-/// Type describing the underlying byte order.
+/// Helper type describing the underlying byte order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Order {
     /// Big-endian byte order.
@@ -547,8 +568,7 @@ pub enum Order {
     LE,
 }
 
-/// Type of `from` methods' argument specifying to take the bytes of either the header only or the
-/// whole packet.
+/// Helper type specifying whether to take the bytes of the header only or the whole packet.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Take {
     /// Take bytes of header only.
