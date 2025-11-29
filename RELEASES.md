@@ -1,3 +1,10 @@
+# Version 0.6.0 (2025-11-29)
+
+  * Support scoped trait implementations.
+  * Do no longer auto-implement `InSituMut` due to trait leakage related to the Rust [issue].
+
+[issue]: https://github.com/rust-lang/rust/issues/83882
+
 # Version 0.5.0 (2025-11-20)
 
   * Modernize.

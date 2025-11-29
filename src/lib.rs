@@ -72,8 +72,9 @@ pub fn aligned(offset: usize, align: usize) -> usize {
 /// Requires methods to be implemented detecting or hardcoding the word size and endianness. This
 /// trait requires the `AsRef<[u8]>` trait to access slices of generic types. It is not implemented
 /// for the `Raw` trait but instead for its wrapper types since each wrapper might implement the
-/// endianness detection differently.
-pub trait InSitu: AsRef<[u8]> {
+/// endianness detection differently. The `Scope` allows to make implementations private by defining
+/// a private `struct Scope;`. The default `InSitu<Scope = ()>` is public.
+pub trait InSitu<Scope = ()>: AsRef<[u8]> {
     /// The word size of the slice, not to be confused with the various word sizes of how to access
     /// the slice.
     fn swap_size(&self) -> usize;
@@ -282,9 +283,12 @@ pub trait InSitu: AsRef<[u8]> {
 
 /// Provides endian-independent mutable bytes access.
 ///
-/// Requires `InSitu` trait to know about endianness. This trait is auto-implemented for all
-/// `InSitu + AsMut<[u8]>` implementors.
-pub trait InSituMut: InSitu + AsMut<[u8]> {
+/// Requires `InSitu<Scope>` trait to know about endianness. `InSituMut<Scope>` is **not (yet)**
+/// auto-implemented for all `InSitu<Scope> + AsMut<[u8]>` implementors as the trait name would leak
+/// into the documentation under blanket implementations even for a private `Scope`. This might be
+/// resolved in the far future by a language extension supporting scoped trait implementations or by
+/// just fixing `rustdoc` if there are no loopholes allowing to actually use the trait.
+pub trait InSituMut<Scope = ()>: InSitu<Scope> + AsMut<[u8]> {
     /// Sets `bool` in slice of `swap_size()` at big-endian `offset` endian-independently.
     fn set_bool(&mut self, offset: usize, value: bool) {
         self.set_u8(offset, value.into());
@@ -451,7 +455,7 @@ pub trait InSituMut: InSitu + AsMut<[u8]> {
 }
 
 // Auto-implement `InSituMut` for `InSitu + AsMut<[u8]>` implementors.
-impl<T: InSitu + AsMut<[u8]>> InSituMut for T {}
+// impl<T: InSitu<S> + AsMut<[u8]>, S> InSituMut<S> for T {}
 
 /// Abstracts immutable as well as mutable generic bytes view types like `[u8]` and `mut [u8]` as
 /// immutable views.
